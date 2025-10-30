@@ -101,7 +101,7 @@ jobs:
 | `to_ref` | End reference for diff | `HEAD` | No |
 | `small_fast_model` | Use small fast model for Claude | - | No |
 | `api_base_url` | API base URL for Claude (optional, defaults to Anthropic API) | - | No |
-| `model` | Claude model to use | `claude-3-5-sonnet-20241022` | No |
+| `model` | Claude model to use | `claude-sonnet-4-5-20250929` | No |
 | `use_bedrock` | Use Amazon Bedrock | `false` | No |
 | `use_vertex` | Use Google Vertex AI | `false` | No |
 | `bedrock_region` | AWS Bedrock region | `us-east-1` | No |
