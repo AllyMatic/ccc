@@ -1,6 +1,6 @@
 name: 'Claude Code Changelog'
 description: 'Generate changelog using Claude Code based on git diff from last tag'
-author: 'mistricky'
+author: 'allymatic'
 branding:
   icon: 'file-text'
   color: 'orange'
@@ -99,10 +99,11 @@ runs:
         
         # Load prompt template and substitute variables
         PROMPT_TEMPLATE="${{ github.action_path }}/prompts/changelog_prompt.md"
-        sed -e "s|{{FROM_TAG}}|$PREV_TAG|g" \
-            -e "s|{{TO_REF}}|${{ steps.prev_tag.outputs.current_tag }}|g" \
-            -e "s|{{COMMITS}}|${LOG}|g" \
-            "$PROMPT_TEMPLATE" > /tmp/changelog_prompt.md
+        TEMPLATE=$(cat "$PROMPT_TEMPLATE")
+        TEMPLATE="${TEMPLATE//\{\{FROM_TAG\}\}/$PREV_TAG}"
+        TEMPLATE="${TEMPLATE//\{\{TO_REF\}\}/${{ steps.prev_tag.outputs.current_tag }}}"
+        TEMPLATE="${TEMPLATE//\{\{COMMITS\}\}/$LOG}"
+        echo "$TEMPLATE" > /tmp/changelog_prompt.md
 
     - name: Generate changelog with Claude Code Base Action
       id: claude
