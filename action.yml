@@ -114,13 +114,13 @@ runs:
           ANTHROPIC_BASE_URL: ${{ inputs.api_base_url }}
           ANTHROPIC_MODEL: ${{ inputs.model }}
           ANTHROPIC_SMALL_FAST_MODEL: ${{ inputs.small_fast_model }}
+          AWS_REGION: ${{ inputs.bedrock_region }}
+          ANTHROPIC_VERTEX_PROJECT_ID: ${{ inputs.vertex_project_id }}
+          CLOUD_ML_REGION: ${{ inputs.vertex_region }}
         anthropic_api_key: ${{ inputs.anthropic_api_key }}
         claude_code_oauth_token: ${{ inputs.claude_code_oauth_token }}
         use_bedrock: ${{ inputs.use_bedrock }}
         use_vertex: ${{ inputs.use_vertex }}
-        bedrock_region: ${{ inputs.bedrock_region }}
-        vertex_project_id: ${{ inputs.vertex_project_id }}
-        vertex_region: ${{ inputs.vertex_region }}
         model: ${{ inputs.model }}
         allowed_tools: "Bash(git:*),Read,Write,Edit"
         prompt_file: /tmp/changelog_prompt.md
