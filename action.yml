@@ -13,6 +13,9 @@ inputs:
   anthropic_api_key:
     description: 'Anthropic API key for Claude'
     required: false
+  claude_code_oauth_token:
+    description: 'Claude Code OAuth token (alternative to API key)'
+    required: false
   small_fast_model:
     description: 'Use small fast model for Claude'
     required: false
@@ -111,6 +114,7 @@ runs:
           ANTHROPIC_MODEL: ${{ inputs.model }}
           ANTHROPIC_SMALL_FAST_MODEL: ${{ inputs.small_fast_model }}
         anthropic_api_key: ${{ inputs.anthropic_api_key }}
+        claude_code_oauth_token: ${{ inputs.claude_code_oauth_token }}
         use_bedrock: ${{ inputs.use_bedrock }}
         use_vertex: ${{ inputs.use_vertex }}
         bedrock_region: ${{ inputs.bedrock_region }}

@@ -46,6 +46,18 @@ jobs:
         run: echo "${{ steps.changelog.outputs.result }}"
 ```
 
+### 使用 OAuth Token（推荐）
+
+如果你有 Claude Pro/Max 订阅，可以使用 OAuth Token 代替 API Key：
+
+```yaml
+- name: 生成更新说明
+  uses: allymatic/ccc@main
+  with:
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+```
+
 ### 配合 Release 使用
 
 ```yaml
@@ -114,6 +126,7 @@ jobs:
 |------|------|--------|------|
 | `github_token` | GitHub Token | `${{ github.token }}` | 是 |
 | `anthropic_api_key` | Anthropic API Key | - | 否* |
+| `claude_code_oauth_token` | Claude OAuth Token（可替代 API Key） | - | 否* |
 | `from_tag` | 起始 tag | 最近的 tag | 否 |
 | `to_ref` | 目标引用 | `HEAD` | 否 |
 | `model` | Claude 模型 | `claude-sonnet-4-5-20250929` | 否 |
@@ -123,7 +136,7 @@ jobs:
 | `vertex_project_id` | GCP 项目 ID | - | 否** |
 | `vertex_region` | GCP 区域 | `us-central1` | 否 |
 
-\* 不使用 Bedrock 或 Vertex AI 时必填  
+\* `anthropic_api_key` 或 `claude_code_oauth_token` 二选一（不使用 Bedrock/Vertex AI 时）  
 \*\* 使用 Vertex AI 时必填
 
 ## 输出
