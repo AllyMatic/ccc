@@ -1,28 +1,27 @@
 # CCC (Claude Code Changelog)
 
-A GitHub Action that automatically generates changelogs using Claude Code's AI capabilities.
+一个使用 Claude AI 自动生成产品更新说明的 GitHub Action。
 
-## Overview
+## 简介
 
-CCC (Claude Code Changelog) is a GitHub Action that leverages the official [Claude Code Action](https://github.com/anthropics/claude-code-action) to automatically analyze code changes and generate high-quality changelogs using Claude AI.
+CCC 是一个 GitHub Action，基于官方的 [Claude Code Action](https://github.com/anthropics/claude-code-action) 构建，能够自动分析代码变更并生成面向客户的产品更新说明。
 
-## Features
+## 特性
 
-- 🤖 **AI-powered changelog generation** using the official Claude Code Action
-- 📝 **Automatic git analysis** from tag to tag or commit range
-- 🔄 **Multiple authentication methods** (Anthropic API, AWS Bedrock, Google Vertex AI)
-- 🎯 **Structured changelog format** with conventional categories (Added, Changed, Fixed, etc.)
-- ⚡ **Zero configuration** - works out of the box with sensible defaults
-- 🛡️ **Fallback mechanism** - generates basic changelog if AI processing fails
+- 🤖 **AI 智能生成** - 使用 Claude AI 分析代码变更，生成易读的更新说明
+- 📝 **自动化分析** - 自动对比 tag 之间的所有提交
+- 🔄 **多种认证方式** - 支持 Anthropic API、AWS Bedrock、Google Vertex AI
+- 🎯 **客户友好** - 生成的内容直接面向客户，无技术术语
+- ⚡ **开箱即用** - 默认配置即可运行
 
-## Usage
+## 使用方法
 
-### Basic Usage
+### 基础用法
 
-Create a `.github/workflows/changelog.yml` file in your repository:
+在你的仓库中创建 `.github/workflows/changelog.yml` 文件：
 
 ```yaml
-name: Generate Changelog
+name: 生成更新说明
 on:
   push:
     tags:
@@ -34,39 +33,57 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full history for git analysis
-      
-      - name: Generate Changelog
-        uses: mistricky/ccc@v0.2.2
+          fetch-depth: 0  # 需要完整的 git 历史
+
+      - name: 生成更新说明
+        id: changelog
+        uses: allymatic/ccc@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-        
-      - name: View Generated Changelog
-        run: |
-          echo "Changelog generated and output above"
+
+      - name: 查看结果
+        run: echo "${{ steps.changelog.outputs.result }}"
 ```
 
-### Advanced Usage
-
-#### With Custom Tag Range
+### 配合 Release 使用
 
 ```yaml
-- name: Generate Changelog
-  uses: mistricky/ccc@v0.2.2
-  with:
-    github_token: ${{ secrets.GITHUB_TOKEN }}
-    anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-    from_tag: 'v1.0.0'
-    to_ref: 'HEAD'
-    output_file: 'CHANGELOG.md'
+name: 发布新版本
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 生成更新说明
+        id: changelog
+        uses: allymatic/ccc@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: 创建 Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.result }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-#### With AWS Bedrock
+### 使用 AWS Bedrock
 
 ```yaml
-- name: Generate Changelog
-  uses: mistricky/ccc@v0.2.2
+- name: 生成更新说明
+  uses: allymatic/ccc@main
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     use_bedrock: true
@@ -77,11 +94,11 @@ jobs:
     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
 
-#### With Google Vertex AI
+### 使用 Google Vertex AI
 
 ```yaml
-- name: Generate Changelog
-  uses: mistricky/ccc@v0.2.2
+- name: 生成更新说明
+  uses: allymatic/ccc@main
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     use_vertex: true
@@ -91,98 +108,42 @@ jobs:
     GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 ```
 
-### Configuration Options
+## 配置参数
 
-| Parameter | Description | Default | Required |
-|-----------|-------------|---------|----------|
-| `github_token` | GitHub token with repo access | `${{ github.token }}` | Yes |
-| `anthropic_api_key` | Anthropic API key for Claude | - | No* |
-| `from_tag` | Start tag for diff (defaults to latest tag) | Latest tag | No |
-| `to_ref` | End reference for diff | `HEAD` | No |
-| `small_fast_model` | Use small fast model for Claude | - | No |
-| `api_base_url` | API base URL for Claude (optional, defaults to Anthropic API) | - | No |
-| `model` | Claude model to use | `claude-sonnet-4-5-20250929` | No |
-| `use_bedrock` | Use Amazon Bedrock | `false` | No |
-| `use_vertex` | Use Google Vertex AI | `false` | No |
-| `bedrock_region` | AWS Bedrock region | `us-east-1` | No |
-| `vertex_project_id` | Google Cloud Project ID | - | No** |
-| `vertex_region` | Google Cloud region | `us-central1` | No |
+| 参数 | 说明 | 默认值 | 必填 |
+|------|------|--------|------|
+| `github_token` | GitHub Token | `${{ github.token }}` | 是 |
+| `anthropic_api_key` | Anthropic API Key | - | 否* |
+| `from_tag` | 起始 tag | 最近的 tag | 否 |
+| `to_ref` | 目标引用 | `HEAD` | 否 |
+| `model` | Claude 模型 | `claude-sonnet-4-5-20250929` | 否 |
+| `use_bedrock` | 使用 AWS Bedrock | `false` | 否 |
+| `use_vertex` | 使用 Google Vertex AI | `false` | 否 |
+| `bedrock_region` | AWS Bedrock 区域 | `us-east-1` | 否 |
+| `vertex_project_id` | GCP 项目 ID | - | 否** |
+| `vertex_region` | GCP 区域 | `us-central1` | 否 |
 
-\* Required when not using Bedrock or Vertex AI  
-\*\* Required when using Vertex AI
+\* 不使用 Bedrock 或 Vertex AI 时必填  
+\*\* 使用 Vertex AI 时必填
 
-### Outputs
+## 输出
 
-| Output | Description |
-|--------|-------------|
-| `result` | Generated changelog content |
-| `from_tag` | Starting tag for the changelog |
-| `to_tag` | Ending reference for the changelog |
+| 输出 | 说明 |
+|------|------|
+| `result` | 生成的更新说明内容 |
+| `from_tag` | 起始 tag |
+| `to_tag` | 目标 tag |
 
-### Example Workflow with Outputs
+## 工作原理
 
-```yaml
-name: Generate and Use Changelog
-on:
-  push:
-    tags: ['v*']
+1. 获取两个 tag 之间的所有 commit 信息
+2. 使用 Claude AI 分析变更内容
+3. 生成面向客户的产品更新说明
 
-jobs:
-  changelog:
-    runs-on: ubuntu-latest
-    outputs:
-      changelog: ${{ steps.generate.outputs.result }}
-      from_tag: ${{ steps.generate.outputs.from_tag }}
-      to_tag: ${{ steps.generate.outputs.to_tag }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Generate Changelog
-        id: generate
-        uses: mistricky/ccc@v0.2.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-      
-      - name: Create Release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          body: |
-            ## 🤖 AI-Generated Changelog
-            
-            ${{ steps.generate.outputs.result }}
-            
-            ---
-            
-            🔗 **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.generate.outputs.from_tag }}...${{ steps.generate.outputs.to_tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
+## 自定义提示词
 
-## How It Works
+提示词模板位于 `prompts/changelog_prompt.md`，你可以 fork 本仓库后自行修改。
 
-1. Action fetches the latest code changes
-2. Uses Claude Code to analyze change content
-3. Generates semantic changelog entries
-4. Updates the changelog file
-
-## Contributing
-
-Contributions are welcome! Please ensure:
-
-1. Fork this repository
-2. Create a feature branch
-3. Commit your changes
-4. Open a Pull Request
-
-## License
+## 许可证
 
 MIT License
-
-## Support
-
-If you encounter issues, please report them in [Issues](https://github.com/mistricky/ccc/issues).

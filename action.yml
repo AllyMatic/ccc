@@ -94,38 +94,12 @@ runs:
         echo "from_tag=$PREV_TAG" >> $GITHUB_OUTPUT
         echo "to_ref=$TO_REF" >> $GITHUB_OUTPUT
         
-        # Create analysis prompt for Claude with actual commit data
-        cat > /tmp/changelog_prompt.md << EOF
-        You are a technical writer creating a changelog for a software project.
-        
-        There are changes in the git repository between two points:
-          - From tag: $PREV_TAG
-          - To reference: ${{ steps.prev_tag.outputs.current_tag }}
-          - Commits: ${LOG}
-
-        ## Instructions:
-        1. **Categorize changes** using standard changelog categories:
-           - **Added**: New features
-           - **Changed**: Changes in existing functionality
-           - **Deprecated**: Soon-to-be removed features
-           - **Removed**: Removed features
-           - **Fixed**: Bug fixes
-           - **Security**: Security improvements
-
-        2. **Write clear, user-focused descriptions** that explain:
-           - What changed from a user's perspective
-           - Why it matters
-           - Any breaking changes or migration notes
-
-        3. **Use consistent formatting**:
-           - Each item should be a concise bullet point
-           - Start with an action verb when possible
-           - Group related changes together
-
-        4. **Focus on semantic meaning** rather than technical implementation details
-
-        Output ONLY the changelog content in markdown format. Do NOT include any explanatory text, metadata, introductory phrases like "Based on the git analysis" or "Here's the changelog", or concluding remarks. Start IMMEDIATELY with the changelog categories and items (e.g., "## Added"). Do not include version numbers or dates. Do not preface your response with any text whatsoever.
-        EOF
+        # Load prompt template and substitute variables
+        PROMPT_TEMPLATE="${{ github.action_path }}/prompts/changelog_prompt.md"
+        sed -e "s|{{FROM_TAG}}|$PREV_TAG|g" \
+            -e "s|{{TO_REF}}|${{ steps.prev_tag.outputs.current_tag }}|g" \
+            -e "s|{{COMMITS}}|${LOG}|g" \
+            "$PROMPT_TEMPLATE" > /tmp/changelog_prompt.md
 
     - name: Generate changelog with Claude Code Base Action
       id: claude
